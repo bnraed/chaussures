@@ -26,7 +26,17 @@ pipeline {
       }
     }
 
-    // 🚀 CD : PUSH vers Docker Hub
+    // 🔐 CI Security
+    stage('Trivy Scan') {
+      steps {
+        bat '''
+          trivy image --severity HIGH,CRITICAL --ignore-unfixed --exit-code 1 chaussures-ci-cd-backend:latest
+          trivy image --severity HIGH,CRITICAL --ignore-unfixed --exit-code 1 chaussures-ci-cd-frontend:latest
+        '''
+      }
+    }
+
+    // 🚀 CD : Push DockerHub
     stage('Push to DockerHub') {
       steps {
         withCredentials([usernamePassword(
@@ -47,7 +57,6 @@ pipeline {
       }
     }
 
-    // 🧪 CI runtime (optionnel mais bien vu)
     stage('Run Containers') {
       steps {
         bat 'docker compose up -d'

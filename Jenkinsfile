@@ -3,19 +3,20 @@ pipeline {
 
   environment {
     DOCKERHUB_NAMESPACE = "raedbn"
-
-    // noms locaux créés par docker compose build (vu dans ton log)
-    LOCAL_BACKEND_IMAGE  = "chaussures-ci-cd-backend:latest"
-    LOCAL_FRONTEND_IMAGE = "chaussures-ci-cd-frontend:latest"
-
     BACKEND_IMAGE  = "${DOCKERHUB_NAMESPACE}/chaussures-backend:latest"
     FRONTEND_IMAGE = "${DOCKERHUB_NAMESPACE}/chaussures-frontend:latest"
+
+    // NOMS LOCAUX (ceux qui existent chez toi)
+    BACKEND_LOCAL  = "chaussures-backend:latest"
+    FRONTEND_LOCAL = "chaussures-frontend:latest"
   }
 
   stages {
 
     stage("Checkout") {
-      steps { checkout scm }
+      steps {
+        checkout scm
+      }
     }
 
     stage("Cleanup old containers") {
@@ -30,6 +31,7 @@ pipeline {
       steps {
         bat '''
           docker compose build
+          echo ==== Local images ====
           docker images | findstr chaussures
         '''
       }
@@ -38,7 +40,7 @@ pipeline {
     stage("Login DockerHub") {
       steps {
         withCredentials([usernamePassword(
-          credentialsId: 'dockerhub',
+          credentialsId: 'dockerhub',     // <-- si ton ID est différent, change ici
           usernameVariable: 'DOCKER_USER',
           passwordVariable: 'DOCKER_PASS'
         )]) {
@@ -51,13 +53,15 @@ pipeline {
 
     stage("Tag & Push images") {
       steps {
-        bat '''
-          docker tag %LOCAL_BACKEND_IMAGE%  %BACKEND_IMAGE%
-          docker tag %LOCAL_FRONTEND_IMAGE% %FRONTEND_IMAGE%
+        bat """
+          echo ==== Tagging ====
+          docker tag %BACKEND_LOCAL%  %BACKEND_IMAGE%
+          docker tag %FRONTEND_LOCAL% %FRONTEND_IMAGE%
 
+          echo ==== Pushing ====
           docker push %BACKEND_IMAGE%
           docker push %FRONTEND_IMAGE%
-        '''
+        """
       }
     }
 
@@ -66,10 +70,10 @@ pipeline {
         bat '''
           if not exist reports mkdir reports
 
-          echo ==== TRIVY BACKEND (%BACKEND_IMAGE%) ==== > reports\\trivy-backend.txt
+          echo ==== TRIVY BACKEND ==== > reports\\trivy-backend.txt
           trivy image --severity HIGH,CRITICAL --no-progress %BACKEND_IMAGE% >> reports\\trivy-backend.txt
 
-          echo ==== TRIVY FRONTEND (%FRONTEND_IMAGE%) ==== > reports\\trivy-frontend.txt
+          echo ==== TRIVY FRONTEND ==== > reports\\trivy-frontend.txt
           trivy image --severity HIGH,CRITICAL --no-progress %FRONTEND_IMAGE% >> reports\\trivy-frontend.txt
         '''
       }
@@ -96,6 +100,7 @@ pipeline {
   post {
     always {
       archiveArtifacts artifacts: 'reports/*.txt', fingerprint: true
+
       bat '''
         docker compose down --remove-orphans
       '''

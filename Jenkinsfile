@@ -10,13 +10,13 @@ pipeline {
 
         stage('Build Docker Images') {
             steps {
-                sh 'docker compose build'
+                bat 'docker compose build'
             }
         }
 
         stage('Run Containers') {
             steps {
-                sh 'docker compose up -d'
+                bat 'docker compose up -d'
             }
         }
     }

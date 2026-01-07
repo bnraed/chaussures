@@ -3,11 +3,13 @@ pipeline {
 
   environment {
     DOCKERHUB_NAMESPACE = "raedbn"
-    BACKEND_REPO = "chaussures-backend"
-    FRONTEND_REPO = "chaussures-frontend"
 
-    BACKEND_IMAGE  = "${DOCKERHUB_NAMESPACE}/${BACKEND_REPO}:latest"
-    FRONTEND_IMAGE = "${DOCKERHUB_NAMESPACE}/${FRONTEND_REPO}:latest"
+    // noms locaux créés par docker compose build (vu dans ton log)
+    LOCAL_BACKEND_IMAGE  = "chaussures-ci-cd-backend:latest"
+    LOCAL_FRONTEND_IMAGE = "chaussures-ci-cd-frontend:latest"
+
+    BACKEND_IMAGE  = "${DOCKERHUB_NAMESPACE}/chaussures-backend:latest"
+    FRONTEND_IMAGE = "${DOCKERHUB_NAMESPACE}/chaussures-frontend:latest"
   }
 
   stages {
@@ -28,29 +30,7 @@ pipeline {
       steps {
         bat '''
           docker compose build
-        '''
-      }
-    }
-
-    stage("Detect built image IDs (from compose)") {
-      steps {
-        bat '''
-          REM Récupère les IDs d'images buildées par compose
-          FOR /F "usebackq delims=" %%i IN (`docker compose images -q backend`) DO SET BACKEND_LOCAL_ID=%%i
-          FOR /F "usebackq delims=" %%i IN (`docker compose images -q frontend`) DO SET FRONTEND_LOCAL_ID=%%i
-
-          echo BACKEND_LOCAL_ID=%BACKEND_LOCAL_ID%
-          echo FRONTEND_LOCAL_ID=%FRONTEND_LOCAL_ID%
-
-          IF "%BACKEND_LOCAL_ID%"=="" (
-            echo ERROR: Impossible de trouver l'image backend via "docker compose images -q backend"
-            exit /b 1
-          )
-
-          IF "%FRONTEND_LOCAL_ID%"=="" (
-            echo ERROR: Impossible de trouver l'image frontend via "docker compose images -q frontend"
-            exit /b 1
-          )
+          docker images | findstr chaussures
         '''
       }
     }
@@ -72,12 +52,10 @@ pipeline {
     stage("Tag & Push images") {
       steps {
         bat '''
-          echo Tag backend -> %BACKEND_IMAGE%
-          docker tag %BACKEND_LOCAL_ID% %BACKEND_IMAGE%
-          docker push %BACKEND_IMAGE%
+          docker tag %LOCAL_BACKEND_IMAGE%  %BACKEND_IMAGE%
+          docker tag %LOCAL_FRONTEND_IMAGE% %FRONTEND_IMAGE%
 
-          echo Tag frontend -> %FRONTEND_IMAGE%
-          docker tag %FRONTEND_LOCAL_ID% %FRONTEND_IMAGE%
+          docker push %BACKEND_IMAGE%
           docker push %FRONTEND_IMAGE%
         '''
       }

@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: chaussures-frontend
+  namespace: chaussures
+spec:
+  selector:
+    app: chaussures-frontend
+  ports:
+    - port: 80
+      targetPort: 80

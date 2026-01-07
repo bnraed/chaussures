@@ -1,0 +1,21 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: chaussures-frontend
+  namespace: chaussures
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: chaussures-frontend
+  template:
+    metadata:
+      labels:
+        app: chaussures-frontend
+    spec:
+      containers:
+        - name: frontend
+          image: raedbn/chaussures-frontend:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 80

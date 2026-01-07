@@ -1,0 +1,25 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: chaussures-ingress
+  namespace: chaussures
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: chaussures.local
+      http:
+        paths:
+          - path: /api
+            pathType: Prefix
+            backend:
+              service:
+                name: chaussures-backend
+                port:
+                  number: 5000
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: chaussures-frontend
+                port:
+                  number: 80

@@ -1,0 +1,28 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: chaussures-backend
+  namespace: chaussures
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: chaussures-backend
+  template:
+    metadata:
+      labels:
+        app: chaussures-backend
+    spec:
+      containers:
+        - name: backend
+          image: raedbn/chaussures-backend:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 5000
+          env:
+            - name: PORT
+              value: "5000"
+            - name: MONGO_URI
+              value: "mongodb://mongo:27017/shoe_store"
+            - name: JWT_SECRET
+              value: "123456789"

@@ -1,8 +1,9 @@
 services:
   mongo:
     image: mongo:7
-    volumes:
-      - mongo_data:/data/db
+    # pas de ports en CI
+    # ports:
+    #   - "27017:27017"
 
   backend:
     build: ./backend
@@ -10,18 +11,20 @@ services:
       - PORT=5000
       - MONGO_URI=mongodb://mongo:27017/shoe_store
       - JWT_SECRET=123456789
+    # pas de ports en CI
+    # ports:
+    #   - "5000:5000"
     depends_on:
       - mongo
-    volumes:
-      - backend_uploads:/app/uploads
 
   frontend:
     build:
       context: ./frontend
       args:
         - VITE_API_ORIGIN=http://backend:5000
-    ports:
-      - "8080:80"
+    # pas de ports en CI
+    # ports:
+    #   - "8080:80"
     depends_on:
       - backend
 

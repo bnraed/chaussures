@@ -8,11 +8,6 @@ Elle est entièrement **conteneurisée**, **automatisée avec CI/CD**, et **dép
 
 ## 🏗️ Architecture
 Frontend **React** → Backend **Node.js (API REST)** → **MongoDB**
-
-Déploiement via **Kubernetes + Ingress NGINX**
-
-![Docker Desktop](screenshots/docker-desktop.png)
-
 ---
 
 ## 🧰 Stack Technique
@@ -32,6 +27,8 @@ Déploiement via **Kubernetes + Ingress NGINX**
 - Dockerfile backend
 - Dockerfile frontend
 - docker-compose.yml pour exécution locale
+
+![Docker Desktop](screenshots/docker-desktop.png)
 
 ---
 
@@ -125,7 +122,8 @@ chaussures/
 ---
 
 ## 👤 Auteur
-5ᵉ année Génie Logiciel  
+**Mansour Hassine**  
+4ᵉ année Génie Logiciel  
 Année universitaire **2025–2026**
 
 ---
